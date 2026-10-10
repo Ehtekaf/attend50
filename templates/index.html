@@ -1,0 +1,261 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard &bull; Attendo{% endblock %}
+
+{% block main %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center pb-3 mb-4 border-bottom">
+    <div>
+        <h2 class="fw-bold mb-1">Attendance Dashboard</h2>
+        <p class="text-muted small mb-0">Track your percentages, manage safety buffers, and log sessions.</p>
+    </div>
+    <div class="mt-3 mt-md-0 d-flex gap-2">
+        <a href="/courses" class="btn btn-outline-secondary">
+            <i class="bi bi-gear me-1"></i> Manage Courses
+        </a>
+    </div>
+</div>
+
+{% if not courses %}
+    <div class="card shadow-sm border-0 text-center py-5">
+        <div class="card-body">
+            <i class="bi bi-mortarboard display-3 text-muted d-block mb-3"></i>
+            <h4 class="fw-bold">No Courses Enrolled</h4>
+            <p class="text-muted mb-4">Add your subjects to calculate your safe bunk margins and attend requirements.</p>
+            <a href="/courses" class="btn btn-primary px-4 py-2">
+                <i class="bi bi-plus-circle me-1"></i> Add Your First Course
+            </a>
+        </div>
+    </div>
+{% else %}
+    <!-- Summary Header Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3 bg-white">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 text-primary me-3">
+                        <i class="bi bi-pie-chart fs-3"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small fw-semibold">Overall Attendance</div>
+                        <h3 class="fw-bold mb-0">{{ overall_percentage }}%</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3 bg-white">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-success bg-opacity-10 p-3 text-success me-3">
+                        <i class="bi bi-check2-circle fs-3"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small fw-semibold">Total Attended</div>
+                        <h3 class="fw-bold mb-0">{{ overall_attended }} <span class="fs-6 text-muted font-monospace">/ {{ overall_held }}</span></h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3 bg-white">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-info bg-opacity-10 p-3 text-info me-3">
+                        <i class="bi bi-book fs-3"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small fw-semibold">Active Subjects</div>
+                        <h3 class="fw-bold mb-0">{{ courses|length }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Visualizations -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm p-3 h-100">
+                <h6 class="fw-bold text-secondary mb-3"><i class="bi bi-bar-chart-line me-1"></i> Course Performance vs Target</h6>
+                <div style="position: relative; height: 260px;">
+                    <canvas id="courseBarChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm p-3 h-100">
+                <h6 class="fw-bold text-secondary mb-3"><i class="bi bi-pie-chart me-1"></i> Cumulative Session Ratio</h6>
+                <div style="position: relative; height: 260px;" class="d-flex align-items-center justify-content-center">
+                    <canvas id="ratioDoughnutChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Cards Grid -->
+    <h5 class="fw-bold mb-3 text-dark">Subject Cards & Quick Logger</h5>
+    <div class="row g-4 mb-4">
+        {% for item in courses %}
+            {% set s = item.stats %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm border-0 position-relative">
+                    <div class="position-absolute top-0 start-0 end-0 rounded-top" style="height: 5px; background-color: {{ '#198754' if s.status == 'safe' else '#dc3545' }};"></div>
+
+                    <div class="card-body p-4 d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h5 class="fw-bold text-dark mb-0">{{ item.name }}</h5>
+                                {% if item.code %}
+                                    <span class="badge bg-light text-secondary border mt-1">{{ item.code }}</span>
+                                {% endif %}
+                            </div>
+                            <span class="badge {{ 'bg-success' if s.status == 'safe' else 'bg-danger' }} px-2 py-1">
+                                {{ s.formatted_percentage }}
+                            </span>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="mt-2 mb-3">
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar {{ 'bg-success' if s.status == 'safe' else 'bg-danger' }}"
+                                     role="progressbar"
+                                     style="width: {{ s.percentage }}%;"
+                                     aria-valuenow="{{ s.percentage }}"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100">
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between text-muted small mt-1">
+                                <span>Target: {{ item.target }}%</span>
+                                <span>{{ s.attended }} / {{ s.held }} attended</span>
+                            </div>
+                        </div>
+
+                        <!-- Smart Margin Banner -->
+                        <div class="alert {{ 'alert-success border-success-subtle' if s.status == 'safe' else 'alert-danger border-danger-subtle' }} py-2 px-3 small rounded-3 mb-4">
+                            {% if s.status == 'safe' %}
+                                <i class="bi bi-shield-check me-1"></i>
+                                {% if s.margin_count > 0 %}
+                                    <strong>Safe:</strong> You can bunk <strong>{{ s.margin_count }}</strong> more class{{ 'es' if s.margin_count != 1 else '' }}.
+                                {% else %}
+                                    <strong>On the edge:</strong> Cannot miss next class without falling below target.
+                                {% endif %}
+                            {% else %}
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                {% if s.margin_count != -1 %}
+                                    <strong>Action required:</strong> Attend next <strong>{{ s.margin_count }}</strong> consecutive class{{ 'es' if s.margin_count != 1 else '' }}.
+                                {% else %}
+                                    <strong>Critical:</strong> Target mathematically unreachable.
+                                {% endif %}
+                            {% endif %}
+                        </div>
+
+                        <!-- Quick 1-Click Logging Buttons -->
+                        <div class="mt-auto pt-2 border-top">
+                            <div class="small fw-semibold text-muted mb-2">Log for Today:</div>
+                            <div class="d-flex gap-2">
+                                <form action="/log" method="post" class="flex-fill">
+                                    <input type="hidden" name="course_id" value="{{ item.id }}">
+                                    <input type="hidden" name="status" value="Present">
+                                    <input type="hidden" name="date" value="{{ today }}">
+                                    <button type="submit" class="btn btn-outline-success btn-sm w-100 fw-semibold">
+                                        <i class="bi bi-check-lg"></i> Present
+                                    </button>
+                                </form>
+
+                                <form action="/log" method="post" class="flex-fill">
+                                    <input type="hidden" name="course_id" value="{{ item.id }}">
+                                    <input type="hidden" name="status" value="Absent">
+                                    <input type="hidden" name="date" value="{{ today }}">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm w-100 fw-semibold">
+                                        <i class="bi bi-x-lg"></i> Absent
+                                    </button>
+                                </form>
+
+                                <form action="/log" method="post">
+                                    <input type="hidden" name="course_id" value="{{ item.id }}">
+                                    <input type="hidden" name="status" value="Cancelled">
+                                    <input type="hidden" name="date" value="{{ today }}">
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm" title="Class Cancelled / Holiday">
+                                        <i class="bi bi-slash-circle"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Chart Configuration Scripts -->
+    <script>
+        const labels = {{ chart_labels | safe }};
+        const percentages = {{ chart_percentages | safe }};
+        const targets = {{ chart_targets | safe }};
+        const barColors = {{ chart_colors | safe }};
+
+        // 1. Horizontal Bar Chart (Course vs Target)
+        const ctxBar = document.getElementById('courseBarChart').getContext('2d');
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Current %',
+                        data: percentages,
+                        backgroundColor: barColors,
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Target %',
+                        data: targets,
+                        backgroundColor: '#6c757d',
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) { return value + "%"; }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+        // 2. Cumulative Ratio Donut Chart
+        const ctxDoughnut = document.getElementById('ratioDoughnutChart').getContext('2d');
+        const attended = {{ overall_attended }};
+        const absent = {{ overall_absent }};
+
+        new Chart(ctxDoughnut, {
+            type: 'doughnut',
+            data: {
+                labels: ['Attended', 'Absent'],
+                datasets: [{
+                    data: (attended === 0 && absent === 0) ? [1, 0] : [attended, absent],
+                    backgroundColor: ['#198754', '#dc3545'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    </script>
+{% endif %}
+{% endblock %}

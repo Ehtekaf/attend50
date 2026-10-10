@@ -1,0 +1,18 @@
+body {
+    min-height: 100vh;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.card {
+    border-radius: 0.75rem;
+}
+
+.badge-safe {
+    background-color: #198754;
+    color: #fff;
+}
+
+.badge-danger {
+    background-color: #dc3545;
+    color: #fff;
+}
