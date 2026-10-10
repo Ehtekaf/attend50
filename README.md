@@ -48,6 +48,7 @@ Many universities enforce strict mandatory attendance minimums (such as 75% or 8
    pip install -r requirements.txt
 
 2. **Run the application:**
+    ```bash
     flask run
 
 3. **Open in browser:**
