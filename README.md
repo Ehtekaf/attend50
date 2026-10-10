@@ -38,6 +38,21 @@ Many universities enforce strict mandatory attendance minimums (such as 75% or 8
    * Filterable audit table sorting attendance logs by course or status (`Present`, `Absent`, `Cancelled`).
    * One-click deletion feature enabling students to undo mistaken entries with automatic database updates and recalculations.
 
+
+---
+
+### Getting Started
+
+1. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+
+2. **Run the application:**
+    flask run
+
+3. **Open in browser:**
+    Use the port preview in Codespaces, register a new account, and begin tracking your courses.
+
 ---
 
 ### File Architecture and Implementation Details
