@@ -79,7 +79,7 @@ Many universities enforce strict mandatory attendance minimums (such as 75% or 8
   * `attendance_records`: Stores individual attendance actions with foreign keys to both `users` and `courses`, storing timestamps and status strings.
 
 * **`templates/` Directory:**
-  * `layout.html`: The foundational Jinja2 skeleton. Integrates the Bootswatch Zephyr CSS theme, Bootstrap 5 JavaScript bundle, Bootstrap Icons, and Chart.js CDN. It conditionally renders the top navigation bar depending on session status and injects flashed alerts.
+  * `layout.html`: The foundational Jinja2 skeleton. Integrates the Bootstrap 5 CSS, Bootstrap 5 JavaScript bundle, Bootstrap Icons, and Chart.js CDN. It conditionally renders the top navigation bar depending on session status and injects flashed alerts.
   * `index.html`: The dashboard view. Renders overall cumulative attendance metrics, Chart.js analytical charts, individual subject cards with smart margin banners, and quick 1-click attendance buttons.
   * `courses.html`: Management view for adding courses via modal dialogs, viewing baseline stats, and deleting subjects.
   * `history.html`: Filterable tabular interface for auditing past logs and deleting misclicks.
@@ -87,7 +87,7 @@ Many universities enforce strict mandatory attendance minimums (such as 75% or 8
   * `apology.html`: CS50-styled error presentation template.
 
 * **`static/styles.css`:**
-  Custom styling that complements the Bootswatch theme with refined card shadows, custom badge borders, and responsive mobile enhancements.
+  Custom styling that complements the default Bootstrap theme with refined card shadows, custom badge borders, and responsive mobile enhancements.
 
 * **`requirements.txt`:**
   Specifies the core external Python dependencies (`Flask`, `Flask-Session`, `cs50`, `Werkzeug`) necessary to install and run the application in any standard Python environment.
