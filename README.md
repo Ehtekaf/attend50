@@ -1,6 +1,6 @@
 # Attend50: Intelligent Student Attendance Tracker
 
-#### Video Demo: <URL HERE>
+#### Video Demo: https://youtu.be/vQ2PW2OtVvI
 
 #### Description:
 **Attend50** is a full-stack, responsive web application engineered to solve a common dilemma faced by university students: monitoring institutional attendance criteria, projecting future safe skip margins, and preventing attendance debarment.
